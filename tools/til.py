@@ -19,16 +19,15 @@ def transform_annotations(annotations):
   tf_annotations = {}
 
   for annotation in annotations:
+    obj = {
+      'category_id': annotation['category_id'],
+      'bbox': annotation['bbox']
+    }
+
     if annotation['image_id'] not in tf_annotations:
-      tf_annotations[annotation['image_id']] = [{
-        'category_id': annotation['category_id'],
-        'bbox': annotation['bbox']
-      }]
+      tf_annotations[annotation['image_id']] = [obj]
     else:
-      tf_annotations[annotation['image_id']].append({
-        'category_id': annotation['category_id'],
-        'bbox': annotation['bbox']
-      })
+      tf_annotations[annotation['image_id']].append(obj)
 
   return tf_annotations
 
