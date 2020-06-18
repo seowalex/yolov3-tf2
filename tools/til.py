@@ -33,34 +33,37 @@ def transform_annotations(annotations):
 
 def build_example(image_id, annotation):
   img_path = os.path.join(FLAGS.data_dir, FLAGS.split, FLAGS.split, str(image_id) + '.jpg')
-  img_raw = open(img_path, 'rb').read()
-  im = cv2.imread(img_path)
 
-  height, width, _ = im.shape
+  with open(img_path, 'rb') as f:
+    img_raw = f.read()
+    im = cv2.imread(img_path)
+    classes = ['tops', 'trousers', 'outwear', 'dresses', 'skirts']
 
-  xmin = []
-  ymin = []
-  xmax = []
-  ymax = []
-  classes_text = []
+    height, width, _ = im.shape
 
-  for obj in annotation:
-    xmin.append(float(obj['bbox'][0]) / width)
-    ymin.append(float(obj['bbox'][1]) / height)
-    xmax.append(float(obj['bbox'][0] + obj['bbox'][2]) / width)
-    ymax.append(float(obj['bbox'][1] + obj['bbox'][3]) / height)
-    classes_text.append(str(obj['category_id']).encode('utf8'))
+    xmin = []
+    ymin = []
+    xmax = []
+    ymax = []
+    classes_text = []
 
-  example = tf.train.Example(features=tf.train.Features(feature={
-    'image/encoded': tf.train.Feature(bytes_list=tf.train.BytesList(value=[img_raw])),
-    'image/object/bbox/xmin': tf.train.Feature(float_list=tf.train.FloatList(value=xmin)),
-    'image/object/bbox/xmax': tf.train.Feature(float_list=tf.train.FloatList(value=xmax)),
-    'image/object/bbox/ymin': tf.train.Feature(float_list=tf.train.FloatList(value=ymin)),
-    'image/object/bbox/ymax': tf.train.Feature(float_list=tf.train.FloatList(value=ymax)),
-    'image/object/class/text': tf.train.Feature(bytes_list=tf.train.BytesList(value=classes_text))
-  }))
+    for obj in annotation:
+      xmin.append(float(obj['bbox'][0]) / width)
+      ymin.append(float(obj['bbox'][1]) / height)
+      xmax.append(float(obj['bbox'][0] + obj['bbox'][2]) / width)
+      ymax.append(float(obj['bbox'][1] + obj['bbox'][3]) / height)
+      classes_text.append(classes[obj['category_id'] - 1].encode('utf8'))
 
-  return example
+    example = tf.train.Example(features=tf.train.Features(feature={
+      'image/encoded': tf.train.Feature(bytes_list=tf.train.BytesList(value=[img_raw])),
+      'image/object/bbox/xmin': tf.train.Feature(float_list=tf.train.FloatList(value=xmin)),
+      'image/object/bbox/xmax': tf.train.Feature(float_list=tf.train.FloatList(value=xmax)),
+      'image/object/bbox/ymin': tf.train.Feature(float_list=tf.train.FloatList(value=ymin)),
+      'image/object/bbox/ymax': tf.train.Feature(float_list=tf.train.FloatList(value=ymax)),
+      'image/object/class/text': tf.train.Feature(bytes_list=tf.train.BytesList(value=classes_text))
+    }))
+
+    return example
 
 def main(_argv):
   with open(os.path.join(FLAGS.data_dir, FLAGS.split + '.json')) as f:
