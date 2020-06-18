@@ -1,6 +1,4 @@
-import time
 import os
-import hashlib
 import json
 import cv2
 
