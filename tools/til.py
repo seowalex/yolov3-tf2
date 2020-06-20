@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 from absl import app, flags, logging
 from absl.flags import FLAGS
